@@ -8,12 +8,14 @@ namespace CachingDemoTests
     public class CachingThrottlerTests
     {
         [Theory]
-        [InlineData(3, 100, 0, 0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
-        [InlineData(3, 3,   0, 0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
-        [InlineData(3, 1,   0, 0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
-        [InlineData(3, 0,   0, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)]
-        [InlineData(0, 0,   0, 0, 1, 2, 3, 4, 0, 0, 0, 0, 0)]
-        [InlineData(1, 0,   0, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)]
+        [InlineData(3, 100, 0,   0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
+        [InlineData(3, 3,   0,   0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
+        [InlineData(3, 1,   0,   0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
+        [InlineData(3, 0,   0,   0, 1, 2, 3, 4, 0, 1, 2, 3, 4)]
+        [InlineData(0, 0,   0,   0, 1, 2, 3, 4, 0, 0, 0, 0, 0)]
+        [InlineData(1, 0,   0,   0, 1, 2, 3, 4, 0, 1, 2, 3, 4)]
+        [InlineData(3, 1,   300, 0, 1, 2, 3, 4, 0, 1, 2, 2, 2)]
+
         public void CanThrottle(
             int maxElem, int  timeWindowSeconds, int delayBetweenInMs,
             int in1,  int in2,  int in3,  int in4,  int in5,
