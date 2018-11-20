@@ -56,5 +56,41 @@ namespace CachingDemoTests
             Assert.Equal(out4, throttled.GetResource());
             Assert.Equal(out5, throttled.GetResource());
         }
+
+        [Fact]
+        public void CanThrottleMultipleResources()
+        {
+            var countingResource = new Moq.Mock<IResource<int>>();
+            countingResource.SetupSequence(_ => _.GetResource())
+                .Returns(0)
+                .Returns(1)
+                .Returns(2)
+                .Returns(3)
+                .Returns(4);
+
+            var stringResource = new Moq.Mock<IResource<string>>();
+            stringResource.SetupSequence(_ => _.GetResource())
+                .Returns("zero")
+                .Returns("one")
+                .Returns("two")
+                .Returns("three")
+                .Returns("four");
+
+            CachingThrottler throttler = new CachingThrottler();
+            var throttledCount = throttler.Throttle(countingResource.Object, 1, TimeSpan.FromSeconds(0));
+            var throttledString = throttler.Throttle(stringResource.Object, 1, TimeSpan.FromSeconds(0));
+
+            Assert.Equal(0, throttledCount.GetResource());
+            Assert.Equal(1, throttledCount.GetResource());
+            Assert.Equal(2, throttledCount.GetResource());
+            Assert.Equal(3, throttledCount.GetResource());
+            Assert.Equal(4, throttledCount.GetResource());
+
+            Assert.Equal("zero", throttledString.GetResource());
+            Assert.Equal("one", throttledString.GetResource());
+            Assert.Equal("two", throttledString.GetResource());
+            Assert.Equal("three", throttledString.GetResource());
+            Assert.Equal("four", throttledString.GetResource());
+        }
     }
 }
