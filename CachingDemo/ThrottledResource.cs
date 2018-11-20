@@ -22,36 +22,38 @@ namespace CachingDemo
         public T GetResource()
         {
             DateTime checkTime = DateTime.Now;
-            // access or add new value to the cache
-            bool firstEntry = false;
-            var retrieved = _cache.GetOrAdd(typeof(T), t =>
-            {
-                var fromResource = _resource.GetResource();
-                var timeQueue = new Queue<DateTime>();
-                timeQueue.Enqueue(DateTime.Now);
-                firstEntry = true;
-                return (fromResource, timeQueue);
-            });
 
-            // move the cache window
-            while (!firstEntry && (checkTime.Subtract(retrieved.Item2.Peek()) > _timeOut) )
-            {
-                // remove element if older than window
-                retrieved.Item2.TryDequeue(out _);
-            }
+            T toReturn = default(T);
 
-            if (firstEntry || retrieved.Item2.Count >= _maxCalls)
-            {
-                return (T)retrieved.Item1;
-            }
-            else
-            {
-                var fromResource = _resource.GetResource();
-                retrieved.Item2.Enqueue(checkTime);
+            _cache.AddOrUpdate(typeof(T), t =>
+                {
+                    toReturn = _resource.GetResource();
+                    Queue<DateTime> timeQueue = new Queue<DateTime>();
+                    timeQueue.Enqueue(checkTime);
+                    return (toReturn, timeQueue);
+                },
+                (type, storedValue) =>
+                {
+                    while (checkTime.Subtract(storedValue.Item2.Peek()) > _timeOut)
+                    {
+                        // remove element if older than window
+                        storedValue.Item2.TryDequeue(out _);
+                    }
 
-                _cache[typeof(T)] =  (fromResource, retrieved.Item2);
-                return fromResource;
-            }
+                    if (storedValue.Item2.Count >= _maxCalls)
+                    {
+                        toReturn = (T) storedValue.Item1;
+                        return storedValue;
+                    }
+
+                    toReturn = _resource.GetResource();
+                    storedValue.Item1 = toReturn;
+                    storedValue.Item2.Enqueue(checkTime);
+                    return storedValue;
+                }
+            );
+
+            return toReturn;
         }
     }
 }
