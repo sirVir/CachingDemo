@@ -10,14 +10,12 @@ namespace CachingDemoTests
         public void CanThrottleWhenTooManyRequests()
         {
             var countingResource = new Moq.Mock<IResource<int>>();
-            int mockCounter = 0;
             countingResource.SetupSequence(_ => _.GetResource())
                 .Returns(0)
                 .Returns(1)
                 .Returns(2)
                 .Returns(3)
                 .Returns(4);
-
 
             CachingThrottler throttler = new CachingThrottler();
             var throttled = throttler.Throttle(countingResource.Object, 3, TimeSpan.FromSeconds(100));

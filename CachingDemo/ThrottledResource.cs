@@ -42,7 +42,7 @@ namespace CachingDemo
 
                     if (storedValue.Item2.Count >= _maxCalls)
                     {
-                        toReturn = (T) storedValue.Item1;
+                        toReturn = (T)storedValue.Item1;
                         return storedValue;
                     }
 

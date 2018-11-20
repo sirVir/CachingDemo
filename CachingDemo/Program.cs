@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CachingDemo
+﻿namespace CachingDemo
 {
     class Program
     {
