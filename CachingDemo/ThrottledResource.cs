@@ -34,7 +34,7 @@ namespace CachingDemo
                 },
                 (type, storedValue) =>
                 {
-                    while (checkTime.Subtract(storedValue.Item2.Peek()) > _timeOut)
+                    while (storedValue.Item2.TryPeek(out DateTime peeked) && checkTime.Subtract(peeked) > _timeOut)
                     {
                         // remove element if older than window
                         storedValue.Item2.TryDequeue(out _);
