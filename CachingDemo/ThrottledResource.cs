@@ -32,24 +32,28 @@ namespace CachingDemo
                     timeQueue.Enqueue(checkTime);
                     return (toReturn, timeQueue);
                 },
-                (type, storedValue) =>
+                (type, retrieved) =>
                 {
-                    while (storedValue.Item2.TryPeek(out DateTime peeked) && checkTime.Subtract(peeked) > _timeOut)
+                    (T cachedValue, Queue<DateTime> slidingWindow) cached = (ValueTuple<T, Queue<DateTime>>)retrieved;
+
+                    while (cached.slidingWindow.TryPeek(out DateTime peeked) && checkTime.Subtract(peeked) > _timeOut)
                     {
                         // remove element if older than window
-                        storedValue.Item2.TryDequeue(out _);
+                        cached.slidingWindow.TryDequeue(out _);
                     }
 
-                    if (storedValue.Item2.Count >= _maxCalls)
+                    // return cached value if we exceed the count
+                    if (cached.slidingWindow.Count >= _maxCalls)
                     {
-                        toReturn = (T)storedValue.Item1;
-                        return storedValue;
+                        toReturn = cached.cachedValue;
+                        return cached;
                     }
 
+                    // call  the resource and save to the cache
                     toReturn = _resource.GetResource();
-                    storedValue.Item1 = toReturn;
-                    storedValue.Item2.Enqueue(checkTime);
-                    return storedValue;
+                    cached.cachedValue = toReturn;
+                    cached.slidingWindow.Enqueue(checkTime);
+                    return cached;
                 }
             );
 
